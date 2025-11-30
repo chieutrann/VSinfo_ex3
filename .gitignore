@@ -1,0 +1,8 @@
+# Ignore Jupyter Notebook files
+*.ipynb
+.ipynb_checkpoints/
+
+# Optional common ignores
+__pycache__/
+.DS_Store
+node_modules/
