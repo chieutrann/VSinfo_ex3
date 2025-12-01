@@ -15,6 +15,15 @@ Building the group bar charts or bar charts to display the casualty by weather c
 
 
 
+Animation features:
+
+Bar transitions: Bars smoothly grow/shrink when filter changes (750ms duration)
+Enter animation: New bars start at width 0 and animate to full width
+Exit animation: Removed bars shrink to width 0 before disappearing (500ms)
+Label animations: Value labels fade in/out with opacity transitions
+Position updates: Bars smoothly move to new positions when data changes
+
+
 
 
 

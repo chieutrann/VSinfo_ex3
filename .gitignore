@@ -1,3 +1,10 @@
+# Ignore all files in data folder except complete_datasets.csv
+data/*
+!data/complete_datasets.csv
+
+# Ignore docs folder
+docs/
+
 # Ignore Jupyter Notebook files
 *.ipynb
 .ipynb_checkpoints/
