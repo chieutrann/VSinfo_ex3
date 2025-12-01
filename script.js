@@ -1,17 +1,36 @@
 // Chart dimensions (simpler approach)
-const chartWidth = 1200;   // Total width
+const chartWidth = 800;    // Total width
 const chartHeight = 600;   // Total height
 const padding = 60;        // Space around chart
+const leftPadding = 200;   // Extra space for labels
 
 // Calculate drawing area
-const width = chartWidth - padding * 2;
+const width = chartWidth - leftPadding - padding;
 const height = chartHeight - padding * 2;
 
-// Severity colors
+// Weather condition colors (1-9)
 const colors = {
-    'Slight': '#3498db', 
-    'Serious': '#f39c12',  
-    'Fatal': '#e74c3c'  
+    '1': '#3498db',   // Fine 
+    '2': '#95a5a6',   // Raining 
+    '3': '#ecf0f1',   // Snowing 
+    '4': '#5dade2',   // Fine + high winds
+    '5': '#7f8c8d',   // Raining + high winds
+    '6': '#d5dbdb',   // Snowing + high winds
+    '7': '#34495e',   // Fog or mist
+    '8': '#e67e22',   // Other
+    '9': '#95a5a6'    // Unknown
+};
+
+const weatherLabels = {
+    '1': 'Fine ',
+    '2': 'Raining ',
+    '3': 'Snowing ',
+    '4': 'Fine + high winds',
+    '5': 'Raining + high winds',
+    '6': 'Snowing + high winds',
+    '7': 'Fog or mist',
+    '8': 'Other',
+    '9': 'Unknown'
 };
 
 
@@ -21,7 +40,7 @@ const svg = d3.select('#chart')
     .attr('width', chartWidth)
     .attr('height', chartHeight)
     .append('g')
-    .attr('transform', `translate(${padding}, ${padding})`);
+    .attr('transform', `translate(${leftPadding}, ${padding})`);
 
 // Tooltip element
 const tooltip = d3.select('#tooltip');
@@ -38,139 +57,245 @@ d3.csv('data/complete_datasets.csv').then(data => {
     d3.select('#total-casualties').text(totalCasualties.toLocaleString());
     d3.select('#total-collisions').text(totalCollisions.toLocaleString());
 
-    // Step 1: Process data - count casualties by hour and severity
-    const hourlyData = [];
+    // Step 1: Count casualties per weather condition and track severity
+    const weatherCount = {};
     
-    // Initialize 24 hours with zero counts
-    for (let h = 0; h < 24; h++) {
-        hourlyData[h] = { hour: h, Slight: 0, Serious: 0, Fatal: 0 };
-    }
-    
-    // Count each casualty
     data.forEach(row => {
-        const hour = parseInt(row.time.split(':')[0]);
+        const weather = row.weather_conditions;
         const severity = row.casualty_severity;
         
-        if (severity === '3') hourlyData[hour].Slight++;
-        if (severity === '2') hourlyData[hour].Serious++;
-        if (severity === '1') hourlyData[hour].Fatal++;
+        // Count every casualty
+        if (!weatherCount[weather]) {
+            weatherCount[weather] = { total: 0, severities: new Set() };
+        }
+        weatherCount[weather].total++;
+        weatherCount[weather].severities.add(severity);
+    });
+    
+    // Step 2: Convert to array for D3
+    const weatherData = Object.keys(weatherCount).map(key => ({
+        weather: key,
+        count: weatherCount[key].total,
+        label: weatherLabels[key],
+        severities: weatherCount[key].severities
+    })).sort((a, b) => a.weather - b.weather);
+    
+    // Create filtered data function
+    function getFilteredData(selectedSeverities) {
+        const filteredCount = {};
+        
+        data.forEach(row => {
+            const weather = row.weather_conditions;
+            const severity = row.casualty_severity;
+            
+            if (selectedSeverities.has(severity)) {
+                if (!filteredCount[weather]) {
+                    filteredCount[weather] = 0;
+                }
+                filteredCount[weather]++;
+            }
+        });
+        
+        return Object.keys(weatherCount).map(key => ({
+            weather: key,
+            count: filteredCount[key] || 0,
+            label: weatherLabels[key]
+        })).sort((a, b) => a.weather - b.weather);
     }
 
-
-);
-
-
-
-    
-
-    // Step 2: Update summary cards
-    const totals = {
-        Slight: d3.sum(hourlyData, d => d.Slight),
-        Serious: d3.sum(hourlyData, d => d.Serious),
-        Fatal: d3.sum(hourlyData, d => d.Fatal)
-    };
-    
-    d3.select('#slight-count').text(totals.Slight.toLocaleString());
-    d3.select('#serious-count').text(totals.Serious.toLocaleString());
-    d3.select('#fatal-count').text(totals.Fatal.toLocaleString());
-
     // Step 3: Create scales
-    // X scale for hours (0-23)
-    const xScale = d3.scaleBand()
-        .domain(d3.range(24))
-        .range([0, width])
+    // Y scale for weather conditions (use labels instead of numbers)
+    const yScale = d3.scaleBand()
+        .domain(weatherData.map(d => d.label))
+        .range([0, height])
         .padding(0.2);
 
-    // X scale for severity groups within each hour
-    const xSubScale = d3.scaleBand()
-        .domain(['Slight', 'Serious', 'Fatal'])
-        .range([0, xScale.bandwidth()])
-        .padding(0.05);
-
-    // Y scale for casualty counts
-    const maxCount = d3.max(hourlyData, d => Math.max(d.Slight, d.Serious, d.Fatal));
-    const yScale = d3.scaleLinear()
+    // X scale for casualty counts
+    const maxCount = d3.max(weatherData, d => d.count);
+    const xScale = d3.scaleLinear()
         .domain([0, maxCount])
         .nice()
-        .range([height, 0]);
+        .range([0, width]);
+    
+    // Function to update chart
+    function updateChart(newData) {
+        const newMaxCount = d3.max(newData, d => d.count);
+        xScale.domain([0, newMaxCount]).nice();
+        
+        // Update total casualties count based on filtered data
+        const totalFilteredCasualties = d3.sum(newData, d => d.count);
+        d3.select('#total-casualties').text(totalFilteredCasualties.toLocaleString());
+        
+        // Update total collisions count based on filtered data
+        const selectedSeverities = new Set();
+        severityCheckboxes.forEach(cb => {
+            if (cb.checked) selectedSeverities.add(cb.value);
+        });
+        
+        const filteredCollisions = new Set();
+        data.forEach(row => {
+            if (selectedSeverities.has(row.casualty_severity)) {
+                filteredCollisions.add(row.collision_index);
+            }
+        });
+        d3.select('#total-collisions').text(filteredCollisions.size.toLocaleString());
+        
+        // Update bars
+        svg.selectAll('.bar')
+            .data(newData)
+            .transition()
+            .duration(500)
+            .attr('width', d => xScale(d.count))
+            .style('opacity', d => d.count === 0 ? 0 : 1);
+        
+        // Update labels - hide when count is 0, position outside bars
+        svg.selectAll('.bar-label')
+            .data(newData)
+            .transition()
+            .duration(500)
+            .attr('x', d => xScale(d.count) + 5)
+            .attr('text-anchor', 'start')
+            .style('fill', '#2c3e50')
+            .text(d => d.count === 0 ? '' : d.count.toLocaleString())
+            .style('opacity', d => d.count === 0 ? 0 : 1);
+        
+        // Update x-axis
+        svg.select('.x-axis')
+            .transition()
+            .duration(500)
+            .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format(',d')));
+        
+        // Update grid lines
+        svg.selectAll('.grid-line')
+            .data(xScale.ticks(10))
+            .join('line')
+            .attr('class', 'grid-line')
+            .transition()
+            .duration(500)
+            .attr('x1', d => xScale(d))
+            .attr('x2', d => xScale(d))
+            .attr('y1', 0)
+            .attr('y2', height);
+    }
 
     // Step 4: Draw grid lines
     svg.selectAll('.grid-line')
-        .data(yScale.ticks(10))
+        .data(xScale.ticks(10))
         .join('line')
         .attr('class', 'grid-line')
-        .attr('x1', 0)
-        .attr('x2', width)
-        .attr('y1', d => yScale(d))
-        .attr('y2', d => yScale(d));
+        .attr('x1', d => xScale(d))
+        .attr('x2', d => xScale(d))
+        .attr('y1', 0)
+        .attr('y2', height);
 
     // Step 5: Draw axes
     svg.append('g')
+        .attr('class', 'x-axis')
         .attr('transform', `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale));
+        .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format(',d')));
 
     svg.append('g')
         .call(d3.axisLeft(yScale));
 
-    // Axis labels
-    svg.append('text')
-        .attr('x', width / 2)
-        .attr('y', height + 50)
-        .attr('text-anchor', 'middle')
-        .attr('class', 'axis-label')
-        .text('Hour of Day');
-
-    svg.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('x', -height / 2)
-        .attr('y', -45)
-        .attr('text-anchor', 'middle')
-        .attr('class', 'axis-label')
-        .text('Number of Casualties');
-
     // Step 6: Draw bars
-    const severities = ['Slight', 'Serious', 'Fatal'];
+    svg.selectAll('.bar')
+        .data(weatherData)
+        .join('rect')
+        .attr('class', d => `bar bar-${d.weather}`)
+        .attr('x', 0)
+        .attr('y', d => yScale(d.label))
+        .attr('width', 0)
+        .attr('height', yScale.bandwidth())
+        .attr('fill', d => colors[d.weather])
+        .on('mouseover', function(event, d) {
+            // Highlight bar
+            d3.select(this).style('opacity', 0.8);
+            
+            // Show tooltip
+            tooltip.classed('show', true)
+                .style('left', (event.pageX + 15) + 'px')
+                .style('top', (event.pageY - 15) + 'px');
+            
+            tooltip.select('.weather_cond').text(`${d.label}`);
+            tooltip.select('.severity').text('').style('color', colors[d.weather]);
+            tooltip.select('.count').text(`${d.count.toLocaleString()} casualties`);
+        })
+        .on('mouseout', function() {
+            // Remove highlight
+            d3.select(this).style('opacity', 1);
+            
+            // Hide tooltip
+            tooltip.classed('show', false);
+        })
+        // Animate bars growing from left
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100)
+        .attr('width', d => xScale(d.count));
     
-    // Create a group for each hour
-    const hourGroups = svg.selectAll('.hour-group')
-        .data(hourlyData)
-        .join('g')
-        .attr('transform', d => `translate(${xScale(d.hour)}, 0)`);
+    // Add value labels on bars
+    svg.selectAll('.bar-label')
+        .data(weatherData)
+        .join('text')
+        .attr('class', d => `bar-label bar-label-${d.weather}`)
+        .attr('x', 0)
+        .attr('y', d => yScale(d.label) + yScale.bandwidth() / 2)
+        .attr('dy', '0.35em')
+        .attr('dx', '8')
+        .style('fill', '#2c3e50')
+        .style('font-weight', 'bold')
+        .style('font-size', '14px')
+        .style('pointer-events', 'none')
+        .text(d => d.count.toLocaleString())
+        .style('opacity', 0)
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100)
+        .style('opacity', 1)
+        .attr('x', d => xScale(d.count) + 5)
+        .attr('text-anchor', 'start');
 
-    // Draw 3 bars per hour (one for each severity)
-    severities.forEach(severity => {
-        hourGroups.append('rect')
-            .attr('x', xSubScale(severity))
-            .attr('width', xSubScale.bandwidth())
-            .attr('y', height)
-            .attr('height', 0)
-            .attr('fill', colors[severity])
-            .on('mouseover', function(event, d) {
-                // Highlight bar
-                d3.select(this).style('opacity', 0.8);
-                
-                // Show tooltip
-                tooltip.classed('show', true)
-                    .style('left', (event.pageX + 15) + 'px')
-                    .style('top', (event.pageY - 15) + 'px');
-                
-                tooltip.select('.hour').text(`Hour: ${d.hour}`);
-                tooltip.select('.severity').text(severity).style('color', colors[severity]);
-                tooltip.select('.count').text(`${d[severity]} casualties`);
-            })
-            .on('mouseout', function() {
-                // Remove highlight
-                d3.select(this).style('opacity', 1);
-                
-                // Hide tooltip
-                tooltip.classed('show', false);
-            })
-            // Animate bars growing from bottom
-            .transition()
-            .duration(800)
-            .delay((d, i) => i * 30)
-            .attr('y', d => yScale(d[severity]))
-            .attr('height', d => height - yScale(d[severity]));
+    // Filter functionality
+    const severityCheckboxes = document.querySelectorAll('.severity-filter');
+    const selectAllCheckbox = document.getElementById('select-all');
+
+    // Handle individual checkbox changes
+    severityCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Get selected severities
+            const selectedSeverities = new Set();
+            severityCheckboxes.forEach(cb => {
+                if (cb.checked) selectedSeverities.add(cb.value);
+            });
+            
+            // Update chart with filtered data
+            const filteredData = getFilteredData(selectedSeverities);
+            updateChart(filteredData);
+
+            
+            // Update select all checkbox
+            const allChecked = Array.from(severityCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+        });
+    });
+
+    // Handle select all checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        
+        severityCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        
+        // Get selected severities
+        const selectedSeverities = new Set();
+        if (isChecked) {
+            severityCheckboxes.forEach(cb => selectedSeverities.add(cb.value));
+        }
+        
+        // Update chart with filtered data
+        const filteredData = getFilteredData(selectedSeverities);
+        updateChart(filteredData);
     });
 
 }).catch(error => {

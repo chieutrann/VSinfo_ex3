@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grouped bar Chart - Casualties by Hour of Day</title>
+    <title>Bar Chart - Casualties by Weather Condition</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Casualties by Hour and Severity</h1>
+        <h1>Casualties by Weather Condition</h1>
         <p class="subtitle">Road Traffic Casualties - 2024</p>
         
         <div class="info-panel">
@@ -23,37 +23,29 @@
             </div>
         </div>
 
-        <div class="info-panel">
-            <div class="info-card slight">
-                <div class="label">Slight</div>
-                <div class="value" id="slight-count">-</div>
-            </div>
-            <div class="info-card serious">
-                <div class="label">Serious</div>
-                <div class="value" id="serious-count">-</div>
-            </div>
-            <div class="info-card fatal">
-                <div class="label">Fatal</div>
-                <div class="value" id="fatal-count">-</div>
+        <div class="filter-section">
+            <label class="filter-label">Select one or more casualty severity</label>
+            <div class="filter-checkboxes">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="select-all" checked>
+                    <span>Select all</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" class="severity-filter" value="1" checked>
+                    <span>Fatal</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" class="severity-filter" value="2" checked>
+                    <span>Serious</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" class="severity-filter" value="3" checked>
+                    <span>Slight</span>
+                </label>
             </div>
         </div>
 
-        
 
-        <div class="legend">
-            <div class="legend-item">
-                <span class="legend-color" style="background: #3498db;"></span>
-                <span>Slight</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #f39c12;"></span>
-                <span>Serious</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color" style="background: #e74c3c;"></span>
-                <span>Fatal</span>
-            </div>
-        </div>
 
         <div id="chart"></div>
 
@@ -63,7 +55,7 @@
     </div>
 
     <div class="tooltip" id="tooltip">
-        <div class="hour"></div>
+        <div class="weather_cond"></div>
         <div class="severity"></div>
         <div class="count"></div>
     </div>

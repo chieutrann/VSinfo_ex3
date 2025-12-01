@@ -144,7 +144,7 @@ h1 {
     opacity: 1;
 }
 
-.tooltip .hour {
+.tooltip .weather_cond {
     font-weight: bold;
     font-size: 16px;
     margin-bottom: 5px;
@@ -179,3 +179,79 @@ footer {
     color: #7f8c8d;
     font-size: 0.9em;
 }
+
+.filter-section {
+    margin: 20px 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    border: none;
+}
+
+.filter-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    background: #34495e;
+    padding: 10px 15px;
+    margin: 0 0 0 0;
+    border-radius: 4px 4px 0 0;
+}
+
+.filter-checkboxes {
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    border: 1px solid #bdc3c7;
+    border-top: none;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 12px 20px;
+    background: white;
+    border: none;
+    border-right: 1px solid #bdc3c7;
+    border-radius: 0;
+    transition: all 0.3s;
+    flex: 1;
+    min-width: 150px;
+}
+
+.checkbox-item:last-child {
+    border-right: none;
+}
+
+.checkbox-item:hover {
+    background: #ecf0f1;
+}
+
+.checkbox-item input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-item span {
+    color: #2c3e50;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+}
+
+.checkbox-item:has(input[type="checkbox"]:checked) {
+    background: #3498db;
+}
+
+.checkbox-item:has(input[type="checkbox"]:checked) span {
+    color: white;
+}
+
+.checkbox-item:has(input[type="checkbox"]:checked):hover {
+    background: #2980b9;
+}
+
