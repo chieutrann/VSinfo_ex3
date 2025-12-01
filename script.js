@@ -57,38 +57,44 @@ d3.csv('data/complete_datasets.csv').then(data => {
     d3.select('#total-casualties').text(totalCasualties.toLocaleString());
     d3.select('#total-collisions').text(totalCollisions.toLocaleString());
 
-    // Step 1: Count casualties per weather condition and track severity
+    // Step 1: Count casualties per weather condition
     const weatherCount = {};
     
     data.forEach(row => {
         const weather = row.weather_conditions;
-        const severity = row.casualty_severity;
         
-        // Count every casualty
         if (!weatherCount[weather]) {
-            weatherCount[weather] = { total: 0, severities: new Set() };
+            weatherCount[weather] = 0;
         }
-        weatherCount[weather].total++;
-        weatherCount[weather].severities.add(severity);
+        weatherCount[weather]++;
     });
     
     // Step 2: Convert to array for D3
     const weatherData = Object.keys(weatherCount).map(key => ({
         weather: key,
-        count: weatherCount[key].total,
-        label: weatherLabels[key],
-        severities: weatherCount[key].severities
+        count: weatherCount[key],
+        label: weatherLabels[key]
     })).sort((a, b) => a.weather - b.weather);
     
-    // Create filtered data function
-    function getFilteredData(selectedSeverities) {
+    // Step 3: Filter data by severity
+    function filterBySeverity(severityList) {
         const filteredCount = {};
         
+        // Count only casualties with selected severities
         data.forEach(row => {
             const weather = row.weather_conditions;
             const severity = row.casualty_severity;
             
-            if (selectedSeverities.has(severity)) {
+            // Check if this severity is selected
+            let isSelected = false;
+            for (let i = 0; i < severityList.length; i++) {
+                if (severity === severityList[i]) {
+                    isSelected = true;
+                    break;
+                }
+            }
+            
+            if (isSelected) {
                 if (!filteredCount[weather]) {
                     filteredCount[weather] = 0;
                 }
@@ -96,15 +102,23 @@ d3.csv('data/complete_datasets.csv').then(data => {
             }
         });
         
-        return Object.keys(weatherCount).map(key => ({
-            weather: key,
-            count: filteredCount[key] || 0,
-            label: weatherLabels[key]
-        })).sort((a, b) => a.weather - b.weather);
+        // Convert to array
+        const result = [];
+        for (let key in weatherCount) {
+            result.push({
+                weather: key,
+                count: filteredCount[key] || 0,
+                label: weatherLabels[key]
+            });
+        }
+        
+        // Sort by weather number
+        result.sort((a, b) => a.weather - b.weather);
+        return result;
     }
 
-    // Step 3: Create scales
-    // Y scale for weather conditions (use labels instead of numbers)
+    // Step 4: Create scales
+    // Y scale for weather conditions
     const yScale = d3.scaleBand()
         .domain(weatherData.map(d => d.label))
         .range([0, height])
@@ -117,28 +131,53 @@ d3.csv('data/complete_datasets.csv').then(data => {
         .nice()
         .range([0, width]);
     
-    // Function to update chart
+    // Step 5: Update chart function
     function updateChart(newData) {
-        const newMaxCount = d3.max(newData, d => d.count);
-        xScale.domain([0, newMaxCount]).nice();
+        // Find max count in new data
+        let newMax = 0;
+        for (let i = 0; i < newData.length; i++) {
+            if (newData[i].count > newMax) {
+                newMax = newData[i].count;
+            }
+        }
+        xScale.domain([0, newMax]).nice();
         
-        // Update total casualties count based on filtered data
-        const totalFilteredCasualties = d3.sum(newData, d => d.count);
-        d3.select('#total-casualties').text(totalFilteredCasualties.toLocaleString());
+        // Update total casualties
+        let totalCasualties = 0;
+        for (let i = 0; i < newData.length; i++) {
+            totalCasualties += newData[i].count;
+        }
+        d3.select('#total-casualties').text(totalCasualties.toLocaleString());
         
-        // Update total collisions count based on filtered data
-        const selectedSeverities = new Set();
-        severityCheckboxes.forEach(cb => {
-            if (cb.checked) selectedSeverities.add(cb.value);
-        });
+        // Update total collisions
+        const selectedCollisions = {};
+        const checkboxes = document.querySelectorAll('.severity-filter');
+        const selectedSeverities = [];
         
-        const filteredCollisions = new Set();
-        data.forEach(row => {
-            if (selectedSeverities.has(row.casualty_severity)) {
-                filteredCollisions.add(row.collision_index);
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                selectedSeverities.push(cb.value);
             }
         });
-        d3.select('#total-collisions').text(filteredCollisions.size.toLocaleString());
+        
+        data.forEach(row => {
+            let isSelected = false;
+            for (let i = 0; i < selectedSeverities.length; i++) {
+                if (row.casualty_severity === selectedSeverities[i]) {
+                    isSelected = true;
+                    break;
+                }
+            }
+            if (isSelected) {
+                selectedCollisions[row.collision_index] = true;
+            }
+        });
+        
+        let collisionCount = 0;
+        for (let key in selectedCollisions) {
+            collisionCount++;
+        }
+        d3.select('#total-collisions').text(collisionCount.toLocaleString());
         
         // Update bars
         svg.selectAll('.bar')
@@ -148,14 +187,12 @@ d3.csv('data/complete_datasets.csv').then(data => {
             .attr('width', d => xScale(d.count))
             .style('opacity', d => d.count === 0 ? 0 : 1);
         
-        // Update labels - hide when count is 0, position outside bars
+        // Update labels
         svg.selectAll('.bar-label')
             .data(newData)
             .transition()
             .duration(500)
             .attr('x', d => xScale(d.count) + 5)
-            .attr('text-anchor', 'start')
-            .style('fill', '#2c3e50')
             .text(d => d.count === 0 ? '' : d.count.toLocaleString())
             .style('opacity', d => d.count === 0 ? 0 : 1);
         
@@ -178,7 +215,7 @@ d3.csv('data/complete_datasets.csv').then(data => {
             .attr('y2', height);
     }
 
-    // Step 4: Draw grid lines
+    // Step 6: Draw grid lines
     svg.selectAll('.grid-line')
         .data(xScale.ticks(10))
         .join('line')
@@ -188,7 +225,7 @@ d3.csv('data/complete_datasets.csv').then(data => {
         .attr('y1', 0)
         .attr('y2', height);
 
-    // Step 5: Draw axes
+    // Step 7: Draw axes
     svg.append('g')
         .attr('class', 'x-axis')
         .attr('transform', `translate(0, ${height})`)
@@ -197,7 +234,7 @@ d3.csv('data/complete_datasets.csv').then(data => {
     svg.append('g')
         .call(d3.axisLeft(yScale));
 
-    // Step 6: Draw bars
+    // Step 8: Draw bars
     svg.selectAll('.bar')
         .data(weatherData)
         .join('rect')
@@ -208,10 +245,8 @@ d3.csv('data/complete_datasets.csv').then(data => {
         .attr('height', yScale.bandwidth())
         .attr('fill', d => colors[d.weather])
         .on('mouseover', function(event, d) {
-            // Highlight bar
             d3.select(this).style('opacity', 0.8);
             
-            // Show tooltip
             tooltip.classed('show', true)
                 .style('left', (event.pageX + 15) + 'px')
                 .style('top', (event.pageY - 15) + 'px');
@@ -221,19 +256,15 @@ d3.csv('data/complete_datasets.csv').then(data => {
             tooltip.select('.count').text(`${d.count.toLocaleString()} casualties`);
         })
         .on('mouseout', function() {
-            // Remove highlight
             d3.select(this).style('opacity', 1);
-            
-            // Hide tooltip
             tooltip.classed('show', false);
         })
-        // Animate bars growing from left
         .transition()
         .duration(800)
         .delay((d, i) => i * 100)
         .attr('width', d => xScale(d.count));
     
-    // Add value labels on bars
+    // Step 9: Add labels on bars
     svg.selectAll('.bar-label')
         .data(weatherData)
         .join('text')
@@ -241,7 +272,6 @@ d3.csv('data/complete_datasets.csv').then(data => {
         .attr('x', 0)
         .attr('y', d => yScale(d.label) + yScale.bandwidth() / 2)
         .attr('dy', '0.35em')
-        .attr('dx', '8')
         .style('fill', '#2c3e50')
         .style('font-weight', 'bold')
         .style('font-size', '14px')
@@ -255,7 +285,7 @@ d3.csv('data/complete_datasets.csv').then(data => {
         .attr('x', d => xScale(d.count) + 5)
         .attr('text-anchor', 'start');
 
-    // Filter functionality
+    // Step 10: Filter functionality
     const severityCheckboxes = document.querySelectorAll('.severity-filter');
     const selectAllCheckbox = document.getElementById('select-all');
 
@@ -263,18 +293,24 @@ d3.csv('data/complete_datasets.csv').then(data => {
     severityCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             // Get selected severities
-            const selectedSeverities = new Set();
+            const selected = [];
             severityCheckboxes.forEach(cb => {
-                if (cb.checked) selectedSeverities.add(cb.value);
+                if (cb.checked) {
+                    selected.push(cb.value);
+                }
             });
             
-            // Update chart with filtered data
-            const filteredData = getFilteredData(selectedSeverities);
+            // Filter and update chart
+            const filteredData = filterBySeverity(selected);
             updateChart(filteredData);
-
             
             // Update select all checkbox
-            const allChecked = Array.from(severityCheckboxes).every(cb => cb.checked);
+            let allChecked = true;
+            severityCheckboxes.forEach(cb => {
+                if (!cb.checked) {
+                    allChecked = false;
+                }
+            });
             selectAllCheckbox.checked = allChecked;
         });
     });
@@ -283,18 +319,21 @@ d3.csv('data/complete_datasets.csv').then(data => {
     selectAllCheckbox.addEventListener('change', function() {
         const isChecked = this.checked;
         
+        // Check or uncheck all
         severityCheckboxes.forEach(checkbox => {
             checkbox.checked = isChecked;
         });
         
         // Get selected severities
-        const selectedSeverities = new Set();
+        const selected = [];
         if (isChecked) {
-            severityCheckboxes.forEach(cb => selectedSeverities.add(cb.value));
+            severityCheckboxes.forEach(cb => {
+                selected.push(cb.value);
+            });
         }
         
-        // Update chart with filtered data
-        const filteredData = getFilteredData(selectedSeverities);
+        // Filter and update chart
+        const filteredData = filterBySeverity(selected);
         updateChart(filteredData);
     });
 
