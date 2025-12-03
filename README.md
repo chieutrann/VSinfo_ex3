@@ -1,5 +1,12 @@
 # InfoViz-25W-G1
 
+## Author
+
+Information Visualization Course - 2024/2025  
+Assignment 3: D3 Implementation
+Author: Tran Doan Chau
+Last Updated: December 2024
+
 ## Project Overview
 
 This project visualizes UK road traffic casualties by weather conditions using D3.js. The interactive horizontal bar chart displays casualty counts for different weather conditions with filtering capabilities by severity level (Fatal, Serious, Slight).
@@ -61,9 +68,4 @@ All AI-generated code was reviewed, tested, and customized for this assignment.
 - [D3 Scale API](https://github.com/d3/d3-scale)
 - [UK Road Safety Data](https://www.gov.uk/government/statistical-data-sets/road-safety-open-data)
 
-## Author
 
-Information Visualization Course - 2024/2025  
-Assignment 3: D3 Implementation
-Author: Tran Doan Chau
-Last Updated: December 2024
