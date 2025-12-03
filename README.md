@@ -5,8 +5,8 @@
 ## Author
 
 Information Visualization Course - 2024/2025  
-Assignment 3: D3 Implementation
-Author: Tran Doan Chau
+Assignment 3: D3 Implementation <br>
+Author: Tran Doan Chau <br>
 Last Updated: December 2024
 
 
