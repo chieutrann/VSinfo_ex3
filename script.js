@@ -82,64 +82,6 @@ function countByWeather(data, severity) {
   return countWeatherArr;
 }
 
-function updateCasualtyTable(data, severity) {
-  // Filter data by severity
-  var filtered = severity === "all" ?data:data.filter(function(d) { return d.casualty_severity === severity; });
-
-  var uniqueCollisions = new Set(filtered.map(function(d) { return d.collision_index; }));
-  var totalCollisions = uniqueCollisions.size;
-
-  // Count total casualties
-  var total = filtered.length;
-
-  // Remove old table
-  d3.select("#casualty-table").select("table").remove();
-
-  // Build new table
-  var table = d3.select("#casualty-table")
-    .append("table")
-
-  // Header
-  var thead = table.append("thead").append("tr");
-  thead.append("th")
-    .text("Severity")
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc")
-    .style("background", "#f2f2f2")
-    .style("font-weight", "bold");
-
-    
-  thead.append("th")
-    .text("Total Casualties")
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc")
-    .style("background", "#f2f2f2")
-    .style("font-weight", "bold");
-
-
-
-  thead.append("th")
-    .text("Total Collisions")
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc")
-    .style("background", "#f2f2f2")
-    .style("font-weight", "bold");
-
-  // Row
-  var tbody = table.append("tbody").append("tr");
-  tbody.append("td")
-    .text(severity === "all" ? "All Severities" : severityLabels[severity])
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc");
-  tbody.append("td")
-    .text(total.toLocaleString())
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc");
-  tbody.append("td")
-    .text(totalCollisions.toLocaleString())
-    .style("padding", "8px")
-    .style("border", "1px solid #ccc");
-}
 
 
 // Func to draw and update chart
@@ -148,26 +90,27 @@ function updateChart(chartData) {
   y.domain(chartData.map(function(d) { return d.label; }));
   x.domain([0, d3.max(chartData, function(d) { return d.count; })]).nice();
 
-  // Update bars with data join
+// Update bars with data join
   var bars = chart.selectAll("rect")
     .data(chartData, function(d) { return d.label; });
 
-  // Remove old bars
+
+    // Remove old bars
   bars.exit()
     .transition()
     .duration(500)
     .attr("width", 0)
     .remove();
-
-  // Update existing bars
+    
+    // Update existing bars
   bars.transition()
     .duration(750)
     .attr("y", function(d) { return y(d.label); })
     .attr("width", function(d) { return x(d.count); })
     .attr("height", y.bandwidth())
     .attr("fill", function(d) { return colorScale(d.weather); });
-
-  // Add new bars
+    
+    // Add new bars
   bars.enter()
     .append("rect")
     .attr("x", 0)
@@ -295,8 +238,6 @@ d3.csv("data/complete_datasets.csv").then(function(data) {
   var initialData = countByWeather(data, 'all');
   updateChart(initialData);
   
-  // Initial table
-  updateCasualtyTable(data, "all");
 
   //Filter handler
   d3.select("#severityFilter").on("change", function() {
@@ -308,8 +249,6 @@ d3.csv("data/complete_datasets.csv").then(function(data) {
     var filtered = countByWeather(data, value);
     updateChart(filtered);
     
-  // Update table
-    updateCasualtyTable(data, level);
   });
   
 })
