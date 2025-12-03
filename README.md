@@ -1,12 +1,20 @@
 # InfoViz-25W-G1
-URL: https://chieutrann.github.io/VSinfo_ex3/
+
+
+## Author
+
+Information Visualization Course - 2024/2025  
+Assignment 3: D3 Implementation
+Author: Tran Doan Chau
+Last Updated: December 2024
+
+
 
 ## Project Overview
 
 This project visualizes UK road traffic casualties by weather conditions using D3.js. The interactive horizontal bar chart displays casualty counts for different weather conditions with filtering capabilities by severity level (Fatal, Serious, Slight).
 
 ## Features
-
 ### Interactive Visualization
 - Horizontal bar chart showing casualties by weather condition
 - Color-coded bars for 9 different weather conditions
@@ -14,7 +22,7 @@ This project visualizes UK road traffic casualties by weather conditions using D
 - Responsive design with clean, minimalist styling
 
 ### Animation Effects
-- Bar transitions: Bars smoothly grow/shrink when filter changes (750ms duration)
+- Bar transitions: Bars smoothly grow/shrink when filter changes (750ms)
 - Enter animation: New bars start at width 0 and animate to full width
 - Exit animation: Removed bars shrink to width 0 before disappearing (500ms)
 - Label animations: Value labels fade in/out with opacity transitions
@@ -51,22 +59,14 @@ UK Road Safety Data - 2024 casualty records including weather conditions, severi
 ## AI Assistance Disclosure
 
 This project was developed with assistance from:
-- GitHub Copilot: Code suggestions and boilerplate
-- Claude (Anthropic): Design patterns and documentation
+- GitHub Copilot: Code suggestions, Design patterns and documentation
 
-All AI-generated code was reviewed, tested, and customized for this specific assignment.
+All AI-generated code was reviewed, tested, and modified.
 
 ## References
 
 - [D3.js Official Documentation](https://d3js.org/)
 - [D3 Shape - Arcs](https://github.com/d3/d3-shape#arcs)
 - [D3 Scale API](https://github.com/d3/d3-scale)
-- [Circular Bar Charts](https://www.d3-graph-gallery.com/circular.html)
-- [UK Road Safety Data](https://www.data.gov.uk/)
+- [UK Road Safety Data](https://www.gov.uk/government/statistical-data-sets/road-safety-open-data)
 
-## Author
-
-Information Visualization Course - 2024/2025  
-Assignment 3: D3 Implementation
-Author: Tran Doan Chau
-Last Updated: December 2024
