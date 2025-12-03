@@ -51,7 +51,7 @@ UK Road Safety Data - 2024 casualty records including weather conditions, severi
 ## AI Assistance Disclosure
 
 This project was developed with assistance from:
-- GitHub Copilot: Code suggestions and boilerplate
+- GitHub Copilot: Code suggestions
 - Claude (Anthropic): Design patterns and documentation
 
 All AI-generated code was reviewed, tested, and customized for this specific assignment.
