@@ -1,11 +1,5 @@
 # InfoViz-25W-G1
 
-## Author
-
-Information Visualization Course - 2024/2025  
-Assignment 3: D3 Implementation
-Author: Tran Doan Chau
-Last Updated: December 2024
 
 ## Project Overview
 
@@ -69,3 +63,9 @@ All AI-generated code was reviewed, tested, and customized for this assignment.
 - [UK Road Safety Data](https://www.gov.uk/government/statistical-data-sets/road-safety-open-data)
 
 
+## Author
+
+Information Visualization Course - 2024/2025  
+Assignment 3: D3 Implementation
+Author: Tran Doan Chau
+Last Updated: December 2024
