@@ -1,12 +1,10 @@
 # InfoViz-25W-G1
-URL: https://chieutrann.github.io/VSinfo_ex3/
 
 ## Project Overview
 
 This project visualizes UK road traffic casualties by weather conditions using D3.js. The interactive horizontal bar chart displays casualty counts for different weather conditions with filtering capabilities by severity level (Fatal, Serious, Slight).
 
 ## Features
-
 ### Interactive Visualization
 - Horizontal bar chart showing casualties by weather condition
 - Color-coded bars for 9 different weather conditions
@@ -52,17 +50,16 @@ UK Road Safety Data - 2024 casualty records including weather conditions, severi
 
 This project was developed with assistance from:
 - GitHub Copilot: Code suggestions
-- Claude (Anthropic): Design patterns and documentation
+- Claude: Design patterns and documentation
 
-All AI-generated code was reviewed, tested, and customized for this specific assignment.
+All AI-generated code was reviewed, tested, and customized for this assignment.
 
 ## References
 
 - [D3.js Official Documentation](https://d3js.org/)
 - [D3 Shape - Arcs](https://github.com/d3/d3-shape#arcs)
 - [D3 Scale API](https://github.com/d3/d3-scale)
-- [Circular Bar Charts](https://www.d3-graph-gallery.com/circular.html)
-- [UK Road Safety Data](https://www.data.gov.uk/)
+- [UK Road Safety Data](https://www.gov.uk/government/statistical-data-sets/road-safety-open-data)
 
 ## Author
 
