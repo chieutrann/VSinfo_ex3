@@ -7,8 +7,6 @@
 Information Visualization Course - 2025  
 Assignment 3: D3 Implementation <br>
 Author: Tran Doan Chau <br>
-Last Updated: December 2025
-
 
 
 ## Project Overview
