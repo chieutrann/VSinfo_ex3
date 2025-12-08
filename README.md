@@ -26,13 +26,11 @@ This project visualizes UK road traffic casualties by weather conditions using D
 - Bar transitions: Bars smoothly grow/shrink when filter changes (750ms)
 - Enter animation: New bars start at width 0 and animate to full width
 - Exit animation: Removed bars shrink to width 0 before disappearing (500ms)
-- Label animations: Value labels fade in/out with opacity transitions
 - Position updates: Bars smoothly move to new positions when data changes
 
 ### Data Filtering
 - Filter by casualty severity: All Severities, Fatal, Serious, or Slight
-- Real-time chart updates with smooth animations
-- Dynamic value labels showing exact casualty counts
+
 
 ### Weather Conditions
 The visualization tracks casualties across 9 weather conditions:
