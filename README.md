@@ -55,7 +55,7 @@ The visualization tracks casualties across 9 weather conditions:
 
 ## Data Source
 
-UK Road Safety Data - 2024 casualty records including weather conditions, severity levels, and collision information.
+UK Road Safety Data - 2024
 
 ## AI Assistance Disclosure
 
